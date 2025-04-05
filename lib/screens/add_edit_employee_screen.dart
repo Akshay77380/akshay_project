@@ -35,6 +35,7 @@ class _AddEditEmployeeScreenState extends State<AddEditEmployeeScreen> {
     _endDate = widget.employee?.endDate;
     _isEdited = widget.isEdited ?? false;
     _employee = widget.employee;
+    _selectedDate = DateTime.now();
   }
 
   @override
@@ -189,9 +190,10 @@ class _AddEditEmployeeScreenState extends State<AddEditEmployeeScreen> {
               theme,
               iconPath: 'assets/icons/calendar_icon.png',
               text:
-                  _selectedDate != null
-                      ? DateFormat('dd MMM, yyyy').format(_selectedDate!)
-                      : 'Today',
+                  (_selectedDate == null || _isToday(_selectedDate!))
+                      ? 'Today'
+                      : DateFormat('dd MMM, yyyy').format(_selectedDate!),
+
               size: size,
             ),
           ),
@@ -438,5 +440,12 @@ class _AddEditEmployeeScreenState extends State<AddEditEmployeeScreen> {
         );
       },
     );
+  }
+
+  bool _isToday(DateTime date) {
+    final now = DateTime.now();
+    return now.year == date.year &&
+        now.month == date.month &&
+        now.day == date.day;
   }
 }
