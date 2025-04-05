@@ -339,8 +339,14 @@ class _CustomCalendarState extends State<CustomCalendar> {
         label,
         style:
             isSelected
-                ? AppTextStyles.label.copyWith(color: Colors.white)
-                : AppTextStyles.label.copyWith(color: Colors.blue),
+                ? AppTextStyles.label.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w400,
+                )
+                : AppTextStyles.label.copyWith(
+                  color: Colors.blue,
+                  fontWeight: FontWeight.w400,
+                ),
         overflow: TextOverflow.ellipsis,
         maxLines: 1,
       ),

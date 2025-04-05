@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../theme/app_text_styles.dart';
+
 class CustomCalendar2 extends StatefulWidget {
   final Function(DateTime?) onDateSelected;
   final DateTime? initialDate;
@@ -167,7 +169,6 @@ class _CustomCalendarState2 extends State<CustomCalendar2> {
     final isActuallySelected =
         isNoDateButton ? _noDateSelected : isSelected && !_noDateSelected;
 
-    // Disable the button if it's for a specific date that's before minDate
     final isDisabled =
         date != null &&
         widget.minDate != null &&
@@ -323,13 +324,82 @@ class _CustomCalendarState2 extends State<CustomCalendar2> {
   }
 
   Widget _buildFooter(DateTime today) {
-    return Row(
+    return
+    //   Row(
+    //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    //   children: [
+    //     Row(
+    //       children: [
+    //         const Icon(Icons.calendar_today, size: 20, color: Colors.blue),
+    //         const SizedBox(width: 8),
+    //         Text(
+    //           _noDateSelected ? 'No Date' : _dateFormat.format(_selectedDate!),
+    //           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
+    //         ),
+    //       ],
+    //     ),
+    //     Row(
+    //       mainAxisSize: MainAxisSize.min,
+    //       children: [
+    //         IntrinsicWidth(
+    //           child: TextButton(
+    //             onPressed: () => Navigator.pop(context),
+    //             style: TextButton.styleFrom(
+    //               backgroundColor: const Color(0xFFEDF8FF),
+    //               padding: const EdgeInsets.symmetric(
+    //                 vertical: 12,
+    //                 horizontal: 16,
+    //               ),
+    //               shape: RoundedRectangleBorder(
+    //                 borderRadius: BorderRadius.circular(4),
+    //               ),
+    //             ),
+    //             child: const Text(
+    //               'Cancel',
+    //               style: TextStyle(
+    //                 color: Colors.blue,
+    //                 fontWeight: FontWeight.w500,
+    //               ),
+    //             ),
+    //           ),
+    //         ),
+    //         const SizedBox(width: 8),
+    //         IntrinsicWidth(
+    //           child: ElevatedButton(
+    //             onPressed: () {
+    //               widget.onDateSelected(_selectedDate);
+    //               Navigator.pop(context);
+    //             },
+    //             style: ElevatedButton.styleFrom(
+    //               backgroundColor: Colors.blue,
+    //               padding: const EdgeInsets.symmetric(
+    //                 vertical: 12,
+    //                 horizontal: 16,
+    //               ),
+    //               shape: RoundedRectangleBorder(
+    //                 borderRadius: BorderRadius.circular(4),
+    //               ),
+    //             ),
+    //             child: const Text(
+    //               'Save',
+    //               style: TextStyle(
+    //                 color: Colors.white,
+    //                 fontWeight: FontWeight.w500,
+    //               ),
+    //             ),
+    //           ),
+    //         ),
+    //       ],
+    //     ),
+    //   ],
+    // );
+    Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Row(
           children: [
-            const Icon(Icons.calendar_today, size: 20, color: Colors.blue),
-            const SizedBox(width: 8),
+            Icon(Icons.calendar_today, size: 20, color: Colors.blue),
+            SizedBox(width: MediaQuery.sizeOf(context).width * 0.02),
             Text(
               _noDateSelected ? 'No Date' : _dateFormat.format(_selectedDate!),
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
@@ -343,25 +413,22 @@ class _CustomCalendarState2 extends State<CustomCalendar2> {
               child: TextButton(
                 onPressed: () => Navigator.pop(context),
                 style: TextButton.styleFrom(
-                  backgroundColor: const Color(0xFFEDF8FF),
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 12,
-                    horizontal: 16,
+                  backgroundColor: Color(0xFFEDF8FF),
+                  padding: EdgeInsets.symmetric(
+                    vertical: MediaQuery.sizeOf(context).height * 0.015,
+                    horizontal: MediaQuery.sizeOf(context).width * 0.03,
                   ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
-                child: const Text(
+                child: Text(
                   'Cancel',
-                  style: TextStyle(
-                    color: Colors.blue,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: AppTextStyles.button.copyWith(color: Colors.blue),
                 ),
               ),
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: MediaQuery.sizeOf(context).width * 0.02),
             IntrinsicWidth(
               child: ElevatedButton(
                 onPressed: () {
@@ -370,20 +437,17 @@ class _CustomCalendarState2 extends State<CustomCalendar2> {
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 12,
-                    horizontal: 16,
+                  padding: EdgeInsets.symmetric(
+                    vertical: MediaQuery.sizeOf(context).height * 0.015,
+                    horizontal: MediaQuery.sizeOf(context).width * 0.03,
                   ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
-                child: const Text(
+                child: Text(
                   'Save',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: AppTextStyles.button.copyWith(color: Colors.white),
                 ),
               ),
             ),
