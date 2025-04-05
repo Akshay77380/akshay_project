@@ -325,6 +325,7 @@ class _AddEditEmployeeScreenState extends State<AddEditEmployeeScreen> {
               onDateSelected: (date) => setState(() => _endDate = date),
               primaryColor: Colors.blue,
               showNoDateOption: true,
+              minDate: _selectedDate,
               selectNoDateByDefault: _endDate == null,
             ),
           ),

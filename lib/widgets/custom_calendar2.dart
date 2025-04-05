@@ -8,7 +8,7 @@ class CustomCalendar2 extends StatefulWidget {
   final Color? primaryColor;
   final Color? accentColor;
   final bool selectNoDateByDefault;
-
+  final DateTime? minDate;
   const CustomCalendar2({
     Key? key,
     required this.onDateSelected,
@@ -17,6 +17,7 @@ class CustomCalendar2 extends StatefulWidget {
     this.primaryColor,
     this.accentColor,
     this.selectNoDateByDefault = true,
+    this.minDate,
   }) : super(key: key);
 
   @override
@@ -166,11 +167,28 @@ class _CustomCalendarState2 extends State<CustomCalendar2> {
     final isActuallySelected =
         isNoDateButton ? _noDateSelected : isSelected && !_noDateSelected;
 
+    // Disable the button if it's for a specific date that's before minDate
+    final isDisabled =
+        date != null &&
+        widget.minDate != null &&
+        date.isBefore(widget.minDate!) &&
+        !isSameDay(date, widget.minDate);
+
     return ElevatedButton(
-      onPressed: () => _selectDate(date),
+      onPressed: isDisabled ? null : () => _selectDate(date),
       style: ElevatedButton.styleFrom(
-        backgroundColor: isActuallySelected ? Colors.blue : Color(0xFFEDF8FF),
-        foregroundColor: isActuallySelected ? Colors.white : Colors.blue,
+        backgroundColor:
+            isActuallySelected
+                ? Colors.blue
+                : isDisabled
+                ? Colors.grey[200]
+                : Color(0xFFEDF8FF),
+        foregroundColor:
+            isActuallySelected
+                ? Colors.white
+                : isDisabled
+                ? Colors.grey
+                : Colors.blue,
         padding: const EdgeInsets.symmetric(vertical: 10),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
         elevation: 0,
@@ -179,7 +197,7 @@ class _CustomCalendarState2 extends State<CustomCalendar2> {
         label,
         overflow: TextOverflow.ellipsis,
         maxLines: 1,
-        style: const TextStyle(fontSize: 13),
+        style: TextStyle(fontSize: 13, color: isDisabled ? Colors.grey : null),
       ),
     );
   }
@@ -259,11 +277,16 @@ class _CustomCalendarState2 extends State<CustomCalendar2> {
         final date = daysInMonth[dayIndex];
         final isSelected = !_noDateSelected && isSameDay(_selectedDate, date);
         final isPast = date.isBefore(today) && !isSameDay(date, today);
+        final isBeforeMinDate =
+            widget.minDate != null &&
+            date.isBefore(widget.minDate!) &&
+            !isSameDay(date, widget.minDate);
+        final isDisabled = isPast || isBeforeMinDate;
         final isToday = isSameDay(date, today);
         final isCurrentDay = isSameDay(date, today);
 
         return GestureDetector(
-          onTap: isPast ? null : () => _selectDate(date),
+          onTap: isDisabled ? null : () => _selectDate(date),
           child: Container(
             margin: const EdgeInsets.all(2),
             decoration: BoxDecoration(
@@ -279,7 +302,7 @@ class _CustomCalendarState2 extends State<CustomCalendar2> {
                 '${date.day}',
                 style: TextStyle(
                   color:
-                      isPast
+                      isDisabled
                           ? Colors.grey[400]
                           : isSelected
                           ? Colors.white
