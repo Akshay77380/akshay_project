@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../theme/app_text_styles.dart';
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import '../theme/app_text_styles.dart';
 
 class CustomCalendar2 extends StatefulWidget {
   final Function(DateTime?) onDateSelected;
@@ -11,6 +14,7 @@ class CustomCalendar2 extends StatefulWidget {
   final Color? accentColor;
   final bool selectNoDateByDefault;
   final DateTime? minDate;
+
   const CustomCalendar2({
     Key? key,
     required this.onDateSelected,
@@ -36,9 +40,25 @@ class _CustomCalendarState2 extends State<CustomCalendar2> {
   void initState() {
     super.initState();
     _selectedDate = widget.initialDate;
-    _focusedDate = widget.initialDate ?? DateTime.now();
-    _noDateSelected =
-        widget.selectNoDateByDefault || widget.initialDate == null;
+    final now = DateTime.now();
+
+    if (widget.selectNoDateByDefault || widget.initialDate == null) {
+      _noDateSelected = true;
+    } else {
+      _noDateSelected = false;
+    }
+
+    if (widget.initialDate != null) {
+      _focusedDate = DateTime(
+        widget.initialDate!.year,
+        widget.initialDate!.month,
+        1,
+      );
+    } else if (widget.minDate != null && now.isBefore(widget.minDate!)) {
+      _focusedDate = DateTime(widget.minDate!.year, widget.minDate!.month, 1);
+    } else {
+      _focusedDate = DateTime(now.year, now.month, 1);
+    }
   }
 
   void _selectDate(DateTime? date) {
@@ -58,21 +78,18 @@ class _CustomCalendarState2 extends State<CustomCalendar2> {
   }
 
   void _changeMonth(int delta) {
+    final newFocusedDate = DateTime(
+      _focusedDate.year,
+      _focusedDate.month + delta,
+      1,
+    );
+    if (widget.minDate != null) {
+      final minMonth = DateTime(widget.minDate!.year, widget.minDate!.month, 1);
+      if (newFocusedDate.isBefore(minMonth)) return;
+    }
     setState(() {
-      _focusedDate = DateTime(_focusedDate.year, _focusedDate.month + delta, 1);
+      _focusedDate = newFocusedDate;
     });
-  }
-
-  DateTime _getNextDay(int weekday) {
-    final today = DateTime.now();
-    final daysToAdd = (weekday - today.weekday + 7) % 7;
-    return daysToAdd == 0
-        ? today.add(const Duration(days: 7))
-        : today.add(Duration(days: daysToAdd));
-  }
-
-  DateTime _getNextWeek() {
-    return DateTime.now().add(const Duration(days: 7));
   }
 
   List<DateTime> _getDaysInMonth() {
@@ -89,7 +106,6 @@ class _CustomCalendarState2 extends State<CustomCalendar2> {
     final daysInMonth = _getDaysInMonth();
     final firstWeekday = daysInMonth.first.weekday % 7;
     final today = DateTime.now();
-    final nextTuesday = _getNextDay(DateTime.tuesday);
 
     return Material(
       color: Colors.transparent,
@@ -125,18 +141,14 @@ class _CustomCalendarState2 extends State<CustomCalendar2> {
               ]),
               const SizedBox(height: 20),
             ],
-
             _buildMonthNavigation(),
             const SizedBox(height: 20),
-
             _buildWeekdayHeaders(),
             const SizedBox(height: 8),
-
             _buildCalendarGrid(daysInMonth, firstWeekday, today),
             const SizedBox(height: 20),
             const Divider(thickness: 0.4, color: Colors.grey),
             const SizedBox(height: 12),
-
             _buildFooter(today),
           ],
         ),
@@ -183,7 +195,7 @@ class _CustomCalendarState2 extends State<CustomCalendar2> {
                 ? Colors.blue
                 : isDisabled
                 ? Colors.grey[200]
-                : Color(0xFFEDF8FF),
+                : const Color(0xFFEDF8FF),
         foregroundColor:
             isActuallySelected
                 ? Colors.white
@@ -204,26 +216,35 @@ class _CustomCalendarState2 extends State<CustomCalendar2> {
   }
 
   Widget _buildMonthNavigation() {
+    final canGoPrev =
+        widget.minDate == null ||
+        DateTime(
+          _focusedDate.year,
+          _focusedDate.month - 1,
+          1,
+        ).isAfter(DateTime(widget.minDate!.year, widget.minDate!.month - 1, 1));
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         InkWell(
-          onTap: () => _changeMonth(-1),
-          child: Image.asset(
-            'assets/icons/arrow_left.png',
-            width: 18,
-            height: 18,
+          onTap: canGoPrev ? () => _changeMonth(-1) : null,
+          child: Opacity(
+            opacity: canGoPrev ? 1.0 : 0.3,
+            child: Image.asset(
+              'assets/icons/arrow_left.png',
+              width: 18,
+              height: 18,
+            ),
           ),
         ),
-
         Padding(
-          padding: EdgeInsets.only(left: 8.0, right: 8.0),
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
           child: Text(
             DateFormat('MMMM yyyy').format(_focusedDate),
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
         ),
-
         InkWell(
           onTap: () => _changeMonth(1),
           child: Image.asset(
@@ -245,7 +266,7 @@ class _CustomCalendarState2 extends State<CustomCalendar2> {
                   child: Center(
                     child: Text(
                       day,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 12,
                         color: Colors.blue,
@@ -277,14 +298,12 @@ class _CustomCalendarState2 extends State<CustomCalendar2> {
         final dayIndex = index - firstWeekday;
         final date = daysInMonth[dayIndex];
         final isSelected = !_noDateSelected && isSameDay(_selectedDate, date);
-        final isPast = date.isBefore(today) && !isSameDay(date, today);
         final isBeforeMinDate =
             widget.minDate != null &&
             date.isBefore(widget.minDate!) &&
             !isSameDay(date, widget.minDate);
-        final isDisabled = isPast || isBeforeMinDate;
+        final isDisabled = isBeforeMinDate;
         final isToday = isSameDay(date, today);
-        final isCurrentDay = isSameDay(date, today);
 
         return GestureDetector(
           onTap: isDisabled ? null : () => _selectDate(date),
@@ -294,7 +313,7 @@ class _CustomCalendarState2 extends State<CustomCalendar2> {
               color: isSelected ? Colors.blue : Colors.transparent,
               shape: BoxShape.circle,
               border:
-                  isCurrentDay && !isSelected
+                  isToday && !isSelected
                       ? Border.all(color: Colors.blue, width: 1)
                       : null,
             ),
@@ -307,11 +326,11 @@ class _CustomCalendarState2 extends State<CustomCalendar2> {
                           ? Colors.grey[400]
                           : isSelected
                           ? Colors.white
-                          : isCurrentDay
+                          : isToday
                           ? Colors.blue
                           : Colors.black,
                   fontWeight:
-                      isSelected || isCurrentDay
+                      isSelected || isToday
                           ? FontWeight.bold
                           : FontWeight.normal,
                 ),
@@ -324,81 +343,12 @@ class _CustomCalendarState2 extends State<CustomCalendar2> {
   }
 
   Widget _buildFooter(DateTime today) {
-    return
-    //   Row(
-    //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-    //   children: [
-    //     Row(
-    //       children: [
-    //         const Icon(Icons.calendar_today, size: 20, color: Colors.blue),
-    //         const SizedBox(width: 8),
-    //         Text(
-    //           _noDateSelected ? 'No Date' : _dateFormat.format(_selectedDate!),
-    //           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
-    //         ),
-    //       ],
-    //     ),
-    //     Row(
-    //       mainAxisSize: MainAxisSize.min,
-    //       children: [
-    //         IntrinsicWidth(
-    //           child: TextButton(
-    //             onPressed: () => Navigator.pop(context),
-    //             style: TextButton.styleFrom(
-    //               backgroundColor: const Color(0xFFEDF8FF),
-    //               padding: const EdgeInsets.symmetric(
-    //                 vertical: 12,
-    //                 horizontal: 16,
-    //               ),
-    //               shape: RoundedRectangleBorder(
-    //                 borderRadius: BorderRadius.circular(4),
-    //               ),
-    //             ),
-    //             child: const Text(
-    //               'Cancel',
-    //               style: TextStyle(
-    //                 color: Colors.blue,
-    //                 fontWeight: FontWeight.w500,
-    //               ),
-    //             ),
-    //           ),
-    //         ),
-    //         const SizedBox(width: 8),
-    //         IntrinsicWidth(
-    //           child: ElevatedButton(
-    //             onPressed: () {
-    //               widget.onDateSelected(_selectedDate);
-    //               Navigator.pop(context);
-    //             },
-    //             style: ElevatedButton.styleFrom(
-    //               backgroundColor: Colors.blue,
-    //               padding: const EdgeInsets.symmetric(
-    //                 vertical: 12,
-    //                 horizontal: 16,
-    //               ),
-    //               shape: RoundedRectangleBorder(
-    //                 borderRadius: BorderRadius.circular(4),
-    //               ),
-    //             ),
-    //             child: const Text(
-    //               'Save',
-    //               style: TextStyle(
-    //                 color: Colors.white,
-    //                 fontWeight: FontWeight.w500,
-    //               ),
-    //             ),
-    //           ),
-    //         ),
-    //       ],
-    //     ),
-    //   ],
-    // );
-    Row(
+    return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Row(
           children: [
-            Icon(Icons.calendar_today, size: 20, color: Colors.blue),
+            const Icon(Icons.calendar_today, size: 20, color: Colors.blue),
             SizedBox(width: MediaQuery.sizeOf(context).width * 0.02),
             Text(
               _noDateSelected ? 'No Date' : _dateFormat.format(_selectedDate!),
@@ -407,48 +357,43 @@ class _CustomCalendarState2 extends State<CustomCalendar2> {
           ],
         ),
         Row(
-          mainAxisSize: MainAxisSize.min,
           children: [
-            IntrinsicWidth(
-              child: TextButton(
-                onPressed: () => Navigator.pop(context),
-                style: TextButton.styleFrom(
-                  backgroundColor: Color(0xFFEDF8FF),
-                  padding: EdgeInsets.symmetric(
-                    vertical: MediaQuery.sizeOf(context).height * 0.015,
-                    horizontal: MediaQuery.sizeOf(context).width * 0.03,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(4),
-                  ),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              style: TextButton.styleFrom(
+                backgroundColor: const Color(0xFFEDF8FF),
+                padding: EdgeInsets.symmetric(
+                  vertical: MediaQuery.sizeOf(context).height * 0.015,
+                  horizontal: MediaQuery.sizeOf(context).width * 0.03,
                 ),
-                child: Text(
-                  'Cancel',
-                  style: AppTextStyles.button.copyWith(color: Colors.blue),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(4),
                 ),
+              ),
+              child: Text(
+                'Cancel',
+                style: AppTextStyles.button.copyWith(color: Colors.blue),
               ),
             ),
             SizedBox(width: MediaQuery.sizeOf(context).width * 0.02),
-            IntrinsicWidth(
-              child: ElevatedButton(
-                onPressed: () {
-                  widget.onDateSelected(_selectedDate);
-                  Navigator.pop(context);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  padding: EdgeInsets.symmetric(
-                    vertical: MediaQuery.sizeOf(context).height * 0.015,
-                    horizontal: MediaQuery.sizeOf(context).width * 0.03,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(4),
-                  ),
+            ElevatedButton(
+              onPressed: () {
+                widget.onDateSelected(_selectedDate);
+                Navigator.pop(context);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                padding: EdgeInsets.symmetric(
+                  vertical: MediaQuery.sizeOf(context).height * 0.015,
+                  horizontal: MediaQuery.sizeOf(context).width * 0.03,
                 ),
-                child: Text(
-                  'Save',
-                  style: AppTextStyles.button.copyWith(color: Colors.white),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(4),
                 ),
+              ),
+              child: Text(
+                'Save',
+                style: AppTextStyles.button.copyWith(color: Colors.white),
               ),
             ),
           ],
