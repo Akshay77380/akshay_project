@@ -31,7 +31,6 @@ class _AddEditEmployeeScreenState extends State<AddEditEmployeeScreen> {
     super.initState();
     _nameController = TextEditingController(text: widget.employee?.name ?? '');
     _selectedRole = widget.employee?.role;
-    _selectedDate = widget.employee?.startDate;
     _endDate = widget.employee?.endDate;
     _isEdited = widget.isEdited ?? false;
     _employee = widget.employee;
